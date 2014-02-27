@@ -1,0 +1,45 @@
+#!/usr/bin/env python
+
+"""
+Foo.
+"""
+
+import argparse
+import datetime
+import heapq
+
+def parse_date(s):
+    return datetime.datetime.strptime(s, '%Y-%m-%d').date()
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Calculate and budget your time off.  All dates should be in YYYY-MM-DD format.\nProvide a comma-separated file with <DATE>,<TIME OFF> lines on stdin to simulate vacations.")
+    parser.add_argument("--start-date", help="Simulation start date", type=parse_date, default=datetime.date.today())
+    parser.add_argument("-s", "--start-pto", help="Amount of PTO at simulation start", type=float, default=0.0)
+    parser.add_argument("--accum-date", help="Next payday", type=parse_date, default=datetime.date.today())
+    parser.add_argument("-v", "--vacation-file", help="File name with vacation times", type=argparse.FileType("r"))
+    parser.add_argument("gain", help="Amount of PTO accrued per pay period", type=float)
+    parser.add_argument("length", help="Pay period length in days", type=int)
+    parser.add_argument("end", help="End date for simulation", type=parse_date)
+    args = parser.parse_args()
+
+    events = []
+
+    if args.vacation_file:
+         for line in args.vacation_file:
+             date, _, hrs = line.strip().partition(',')
+             vacation_date = parse_date(date)
+             if vacation_date >= args.start_date:
+                 heapq.heappush(events, (vacation_date, -float(hrs)))
+
+    now = args.start_date
+    period = datetime.timedelta(args.length)
+    pto = args.start_pto
+    heapq.heappush(events, (args.accum_date, args.gain))
+
+    while now <= args.end:
+        print "After {date}: {pto:.2f}".format(date=now, pto=pto)
+        next_date, next_pto = heapq.heappop(events)
+        pto += next_pto
+        now = next_date
+        if next_pto == args.gain:
+            heapq.heappush(events, (next_date + period, args.gain))
