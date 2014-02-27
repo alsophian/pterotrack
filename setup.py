@@ -6,7 +6,7 @@ except:
     from distutils.core import setup
 
 config = {
-    'description': 'foo',
+    'description': 'Time-off budgeter and tracker.',
     'author': 'Michael Jezierny',
     'url': 'https://github.com/alsophian/pterotrack',
     'author_email': 'michael@alsophian.net',

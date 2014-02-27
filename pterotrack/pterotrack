@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Foo.
+This program plans and calculates time-off accumulation using discrete event simulation.
 """
 
 import argparse
@@ -9,20 +9,26 @@ import datetime
 import heapq
 
 def parse_date(s):
+    """
+    Convert an ISO 8601 date (YYYY-MM-DD) into a datetime.date object.
+    """
     return datetime.datetime.strptime(s, '%Y-%m-%d').date()
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Calculate and budget your time off.  All dates should be in YYYY-MM-DD format.\nProvide a comma-separated file with <DATE>,<TIME OFF> lines on stdin to simulate vacations.")
+    parser = argparse.ArgumentParser(description="Calculate and budget your time off.  All dates should be in YYYY-MM-DD format.\n")
     parser.add_argument("--start-date", help="Simulation start date", type=parse_date, default=datetime.date.today())
     parser.add_argument("-s", "--start-pto", help="Amount of PTO at simulation start", type=float, default=0.0)
-    parser.add_argument("--accum-date", help="Next payday", type=parse_date, default=datetime.date.today())
-    parser.add_argument("-v", "--vacation-file", help="File name with vacation times", type=argparse.FileType("r"))
+    parser.add_argument("--accum-date", help="Next payday", type=parse_date)
+    parser.add_argument("-v", "--vacation-file", help="File name with vacation times.  File should be an ordered CSV file with two fields: date and number of hours used.", type=argparse.FileType("r"))
     parser.add_argument("gain", help="Amount of PTO accrued per pay period", type=float)
     parser.add_argument("length", help="Pay period length in days", type=int)
     parser.add_argument("end", help="End date for simulation", type=parse_date)
     args = parser.parse_args()
 
     events = []
+
+    if not args.accum_date:
+        args.accum_date = args.start_date
 
     if args.vacation_file:
          for line in args.vacation_file:
